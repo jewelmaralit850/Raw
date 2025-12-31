@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JSON DB Maker</title>
+  <style>
+    body { font-family: Arial; background:#111; color:#fff; padding:40px }
+    input, button { padding:10px; margin:5px; width:300px }
+    .success { color:#00ff88; margin-top:20px }
+    .url { color:#4da6ff; word-break:break-all }
+  </style>
+</head>
+<body>
+
+<h2>JSON Database Maker</h2>
+
+<input id="name" placeholder="Database Name">
+<br>
+<input id="auth" placeholder="Auth Key">
+<br>
+<button onclick="create()">Create</button>
+
+<div id="result"></div>
+
+<script>
+async function create() {
+  const name = document.getElementById("name").value;
+  const auth = document.getElementById("auth").value;
+
+  const res = await fetch("/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, auth })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById("result").innerHTML = `
+      <div class="success">Successfully Created!</div>
+      <div class="url">
+        ${location.origin}${data.url}
+      </div>
+    `;
+  } else {
+    document.getElementById("result").innerText = data.error;
+  }
+}
+</script>
+
+</body>
+</html>
