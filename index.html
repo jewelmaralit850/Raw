@@ -1,76 +1,110 @@
-<html>
-        <head><title>Downloaded HTML</title></head>
-        <body>
-            <pre style="white-space: pre-wrap; word-wrap: break-word;"><!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAW TEXT GENERATOR</title>
     <style>
-        body {
-            background: #0f0f0f;
-            color: #fff;
-            font-family: Arial;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .box {
-            width: 400px;
-        }
-        input, textarea, button {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #1c1c1c;
-            border: 1px solid #444;
-            color: #fff;
-        }
-        textarea {
-            height: 120px;
-            resize: none;
-        }
-        button {
-            background: #4caf50;
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; background: #f4f4f4; }
+        h1 { color: #333; }
+        input, textarea { width: 80%; padding: 10px; margin: 10px 0; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 18px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #home, #create, #success { display: none; }
+        .copy-btn { padding: 8px 15px; font-size: 14px; background: #28a745; margin: 0 5px; }
+        .copy-btn:hover { background: #218838; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>RAW TEXT GENERATOR</h2>
+<div id="home" class="container">
+    <h1>RAW TEXT GENERATOR</h1>
+    <button onclick="location.href='/create'">Start</button>
+</div>
 
-    <input id="key" placeholder="API Key">
-    <input id="path" placeholder="File Path (test.lua)">
-    <textarea id="content" placeholder='print("hello")'></textarea>
-    <button onclick="save()">Save / Update</button>
+<div id="create" class="container">
+    <h1>Create Raw Text File</h1>
+    <label>Path (e.g., script.lua):</label><br>
+    <input type="text" id="path" placeholder="script.lua"><br><br>
+    
+    <label>Contents of file:</label><br>
+    <textarea id="contents" rows="12" placeholder="Paste your raw text or code here..."></textarea><br><br>
+    
+    <label>API Key (required for future updates):</label><br>
+    <input type="password" id="api_key" placeholder="Choose a strong secret key"><br><br>
+    
+    <button onclick="uploadFile()">Upload / Create</button>
+</div>
 
-    <pre id="out"></pre>
+<div id="success" class="container">
+    <h1>You have successfully created your raw text!</h1>
+    
+    <label>API Key:</label><br>
+    <input type="text" id="display_key" readonly>
+    <button class="copy-btn" onclick="copyToClipboard('display_key')">Copy</button><br><br>
+    
+    <label>Raw URL:</label><br>
+    <input type="text" id="display_url" readonly style="font-family: monospace;">
+    <button class="copy-btn" onclick="copyToClipboard('display_url')">Copy</button><br><br>
+    
+    <button onclick="location.href='/create'">Create Another</button>
 </div>
 
 <script>
-async function save() {
-    const key = document.getElementById("key").value;
-    const path = document.getElementById("path").value;
-    const content = document.getElementById("content").value;
+    // Page routing
+    if (location.pathname === '/' || location.pathname === '/index.html') {
+        document.getElementById('home').style.display = 'block';
+    } else if (location.pathname === '/create') {
+        document.getElementById('create').style.display = 'block';
+    }
 
-    const res = await fetch("/save", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + key
-        },
-        body: JSON.stringify({ path, content })
-    });
+    function uploadFile() {
+        const path = document.getElementById('path').value.trim();
+        const contents = document.getElementById('contents').value;
+        const api_key = document.getElementById('api_key').value.trim();
 
-    const text = await res.text();
-    document.getElementById("out").textContent = text;
-}
+        if (!path || !contents || !api_key) {
+            alert('All fields are required!');
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9._-]+\.[a-zA-Z0-9]+$/.test(path)) {
+            alert('Path must be a valid filename with extension (e.g., file.lua)');
+            return;
+        }
+
+        const url = `/api/${path}?apikey=${encodeURIComponent(api_key)}`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('create').style.display = 'none';
+                document.getElementById('display_key').value = api_key;
+                document.getElementById('display_url').value = location.origin + '/' + path;
+                document.getElementById('success').style.display = 'block';
+            } else {
+                alert(data.error || 'Failed to create/update file');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error. Check console.');
+        });
+    }
+
+    function copyToClipboard(id) {
+        const el = document.getElementById(id);
+        el.select();
+        document.execCommand('copy');
+        alert('Copied to clipboard!');
+    }
 </script>
 
 </body>
 </html>
-</pre>
-        </body>
-    </html>
