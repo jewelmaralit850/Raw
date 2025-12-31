@@ -1,0 +1,76 @@
+<html>
+        <head><title>Downloaded HTML</title></head>
+        <body>
+            <pre style="white-space: pre-wrap; word-wrap: break-word;"><!DOCTYPE html>
+<html>
+<head>
+    <title>RAW TEXT GENERATOR</title>
+    <style>
+        body {
+            background: #0f0f0f;
+            color: #fff;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .box {
+            width: 400px;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        textarea {
+            height: 120px;
+            resize: none;
+        }
+        button {
+            background: #4caf50;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>RAW TEXT GENERATOR</h2>
+
+    <input id="key" placeholder="API Key">
+    <input id="path" placeholder="File Path (test.lua)">
+    <textarea id="content" placeholder='print("hello")'></textarea>
+    <button onclick="save()">Save / Update</button>
+
+    <pre id="out"></pre>
+</div>
+
+<script>
+async function save() {
+    const key = document.getElementById("key").value;
+    const path = document.getElementById("path").value;
+    const content = document.getElementById("content").value;
+
+    const res = await fetch("/save", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + key
+        },
+        body: JSON.stringify({ path, content })
+    });
+
+    const text = await res.text();
+    document.getElementById("out").textContent = text;
+}
+</script>
+
+</body>
+</html>
+</pre>
+        </body>
+    </html>
